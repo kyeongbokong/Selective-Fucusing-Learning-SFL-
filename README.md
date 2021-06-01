@@ -26,7 +26,7 @@ pip install -r requirements.txt
 
 ## Training BigGAN with Selective Focusing Learing on ImageNet
 
-To train BigGAN models we use the [BigGAN-PyTorch](https://github.com/ajbrock/BigGAN-PyTorch) and [Instance Selection for GANs](https://github.com/uoguelph-mlrg/instance_selection_for_gans) repo. We perform minimal changes to the code. The change logs are as follows. The main change part is the conditional term of the projection discriminator in BigGAN.py (L391-L402, L415-L447). Further, updating the focusing rate is represented in train.py (L66-L71, L146-L155, L185-L209).
+To train BigGAN models we use the [BigGAN-PyTorch](https://github.com/ajbrock/BigGAN-PyTorch) and [Instance Selection for GANs](https://github.com/uoguelph-mlrg/instance_selection_for_gans) repo. We perform minimal changes to the code. The main change part is the conditional term of the projection discriminator in BigGAN.py (L391-L402, L415-L447). Further, updating the focusing rate is represented in train.py (L66-L71, L146-L155, L185-L209).
 
 
 #### Preparing Data (Same as [Instance Selection for GANs](https://github.com/uoguelph-mlrg/instance_selection_for_gans))
