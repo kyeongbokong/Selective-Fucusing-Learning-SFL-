@@ -74,6 +74,10 @@ Our model achieves the following performance on :
 Selective Focusing Learing can be applied to any class labeled PyTorch dataset using the `SFL` and `SFL_plus` functions which are a few lines of code. 
 
 
+=======
+The main hyperparameter for Selective Focusing Learing is the `Focusing_rate`, a value from 0 to 100 which indicates the percentage of distribution matching that should be selected from the conditional matching. 
+
+
 ```python
 
   def SFL(self, out_c, out_u, Focusing_rate):

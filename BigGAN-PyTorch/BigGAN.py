@@ -388,7 +388,21 @@ class Discriminator(nn.Module):
         self.param_count += sum([p.data.nelement() for p in module.parameters()])
     print('Param count for D''s initialized parameters: %d' % self.param_count)
 
-  def forward(self, x, y=None,anneal_rate=None, both=False, G_z_size=None, x_size=None, scores=None):
+  def SFL(self, out_c, out_u, Focusing_rate):
+    out_c, idx_c = torch.sort(out_c, dim=0)
+    out_u = out_u[idx_c[:, 0]]
+    out = torch.cat([out_c[Focusing_rate:] + out_u[Focusing_rate:], out_c[:Focusing_rate]], 0)
+    return out
+
+  def SFL_plus(self, out_c, out_u, Focusing_rate, scores):
+    _,idx_c = torch.sort(scores, dim=0, descending=True)
+    out_c = out_c[idx_c]
+    out_u = out_u[idx_c]
+    out = torch.cat([out_c[Focusing_rate:] + out_u[Focusing_rate:], out_c[:Focusing_rate]], 0)
+    return out
+
+
+  def forward(self, x, y=None,Focusing_rate=None, Training_type = None, both=False, G_z_size=None, x_size=None, scores=None):
     # Stick x into h for cleaner for loops without flow control
     h = x
     # Loop over blocks
@@ -402,54 +416,33 @@ class Discriminator(nn.Module):
     # Get projection of final featureset onto class vectors and add to evidence
     out_c = torch.sum(self.embed(y) * h, 1, keepdim=True)
     if both == True:
-        """
-        # Without SFL
+        # Split generated/real samples
         out_c_G_z, out_c_x = torch.split(out_c, [G_z_size, x_size])
         out_u_G_z, out_u_x = torch.split(out_u, [G_z_size, x_size])
 
-        out_G_z = out_c_G_z+out_u_G_z
-        """
-
-        # Generated SFL/SFL+
-        out_c_G_z, out_c_x = torch.split(out_c, [G_z_size, x_size])
-        out_u_G_z, out_u_x = torch.split(out_u, [G_z_size, x_size])
-
-        out_c_G_z,idx_c_G_z = torch.sort(out_c_G_z, dim=0)
-        out_u_G_z = out_u_G_z[idx_c_G_z[:,0]]
-
-
-        out_G_z = torch.cat([out_c_G_z[:anneal_rate] + out_u_G_z[:anneal_rate], out_c_G_z[anneal_rate:]],0)
-
-        """
-        # REAL SFL
-        out_c_x, idx_c_x = torch.sort(out_c_x, dim=0)
-        out_u_x = out_u_x[idx_c_x[:,0]]
-
-        out_x = torch.cat([out_c_x[:anneal_rate] + out_u_x[:anneal_rate], out_c_x[anneal_rate:]], 0)
-        """
-
-
-        # REAL SFL+
-        _,idx_c_x = torch.sort(scores, dim=0, descending=True)
-
-        out_c_x = out_c_x[idx_c_x]
-        out_u_x = out_u_x[idx_c_x]
-
-        out_x = torch.cat([out_c_x[:anneal_rate] + out_u_x[:anneal_rate], out_c_x[anneal_rate:]],0)
+        if Training_type == 'SFL+':
+            # Generated SFL+
+            out_G_z = self.SFL(out_c_G_z, out_u_G_z, Focusing_rate)
+            # REAL SFL+
+            out_x = self.SFL_plus(out_c_x, out_u_x, Focusing_rate, scores)
+        elif Training_type == 'SFL':
+            # Generated SFL
+            out_G_z = self.SFL(out_c_G_z, out_u_G_z, Focusing_rate)
+            # REAL SFL
+            out_x = self.SFL(out_c_x, out_u_x, Focusing_rate)
+        else:
+            # Without SFL
+            out_G_z = out_c_G_z + out_u_G_z
+            out_x = out_c_x + out_u_x
 
         return out_G_z, out_x
 
     else:
-        """
-        # Without SFL
-        out = out_c+out_u
-        """
-
-        # SFL/SFL+
-        out_c,idx_c = torch.sort(out_c, dim=0)
-        out_u = out_u[idx_c[:,0]]
-        out = torch.cat([out_c[:anneal_rate] + out_u[:anneal_rate], out_c[anneal_rate:]],0)
-
+        if Training_type == 'without_SFL':
+            out = out_c + out_u
+        else:
+            # SFL/SFL+
+            out = self.SFL(out_c, out_u, Focusing_rate)
 
         return out
 
@@ -464,7 +457,7 @@ class G_D(nn.Module):
     self.D = D
 
   def forward(self, z, gy, x=None, dy=None, train_G=False, return_G_z=False,
-              split_D=False,anneal_rate=None, scores=None):
+              split_D=False,Focusing_rate=None, Training_type=None, scores=None):
     # If training G, enable grad tape
     with torch.set_grad_enabled(train_G):
       # Get Generator output given noise
@@ -494,10 +487,10 @@ class G_D(nn.Module):
       # Get Discriminator output
 
       if x is not None:
-        D_out_G_z, D_out_x = self.D(D_input, D_class,anneal_rate=anneal_rate,both=True, G_z_size=G_z.shape[0], x_size=x.shape[0], scores=scores)
+        D_out_G_z, D_out_x = self.D(D_input, D_class,Focusing_rate=Focusing_rate, Training_type = Training_type, both=True, G_z_size=G_z.shape[0], x_size=x.shape[0], scores=scores)
         return D_out_G_z, D_out_x # D_fake, D_real
       else:
-        D_out = self.D(D_input, D_class,anneal_rate=anneal_rate)
+        D_out = self.D(D_input, D_class,Focusing_rate=Focusing_rate, Training_type = Training_type)
         if return_G_z:
           return D_out, G_z
         else:
