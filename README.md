@@ -81,7 +81,7 @@ Our model achieves the following performance on :
 
 Selective Focusing Learing can be applied to any class labelled PyTorch dataset using the `SFL` function. When classes are provided, Selective Focusing Learing will be applied separately for each class.  
 
-The main hyperparameter for Selective Focusing Learing is the `retention_ratio`, a value from 0 to 100 which indicates the percentage of distribution matching that should be selected from the conditional matching. 
+The main hyperparameter for Selective Focusing Learing is the `Focusing_rate`, a value from 0 to 100 which indicates the percentage of distribution matching that should be selected from the conditional matching. 
 
 ```python
 
