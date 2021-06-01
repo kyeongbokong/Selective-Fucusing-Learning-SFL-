@@ -39,7 +39,7 @@ def GAN_training_function(G, D, GD, z_, y_, ema, state_dict, config):
         y_.sample_()
         D_fake, D_real = GD(z_[:config['batch_size']], y_[:config['batch_size']], 
                             x[counter], y[counter], train_G=False, 
-                            split_D=config['split_D'],anneal_rate=config['anneal_rate'], scores=scores)
+                            split_D=config['split_D'],Focusing_rate=config['Focusing_rate'], Training_type=config['Training_type'], scores=scores)
          
         # Compute components of D's loss, average them, and divide by 
         # the number of gradient accumulations
@@ -69,7 +69,7 @@ def GAN_training_function(G, D, GD, z_, y_, ema, state_dict, config):
     for accumulation_index in range(config['num_G_accumulations']):    
       z_.sample_()
       y_.sample_()
-      D_fake = GD(z_, y_, train_G=True, split_D=config['split_D'],anneal_rate=config['anneal_rate'])
+      D_fake = GD(z_, y_, train_G=True, split_D=config['split_D'],Focusing_rate=config['Focusing_rate'], Training_type=config['Training_type'])
       G_loss = losses.generator_loss(D_fake) / float(config['num_G_accumulations'])
       G_loss.backward()
     

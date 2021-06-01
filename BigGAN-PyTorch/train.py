@@ -63,8 +63,13 @@ def run(config):
   experiment_name = (config['experiment_name'] if config['experiment_name']
                        else utils.name_from_config(config))
 
-  #experiment_name = experiment_name + '_SFL+_100_50'
-  experiment_name = experiment_name + '_SFL_100_50'
+  if config['Training_type'] == 'SFL+':
+    experiment_name = experiment_name + '_SFL+'
+  elif config['Training_type'] == 'SFL':
+    experiment_name = experiment_name + '_SFL'
+  else:
+    experiment_name = experiment_name + '_without_SFL'
+
 
   print('Experiment name is %s' % experiment_name)
 
@@ -180,7 +185,7 @@ def run(config):
   # Calculate gamma
   num_iter_per_epoch = int(len(train_set)/config['batch_size'])
   E_max = math.ceil(config['num_iters']/num_iter_per_epoch)
-  gamma = (config['maximum_focusing_rate'])**(1/E_max)
+  gamma = (1.0-config['maximum_focusing_rate'])**(1/E_max)
 
   print('Beginning training at epoch %d...' % state_dict['epoch'])
   # Train for specified number of epochs, although we mostly track G iterations.
@@ -195,11 +200,13 @@ def run(config):
       epoch_float = state_dict['itr'] / num_iter_per_epoch
 
       # Update Focusing rate
-      k_frac = min(1-gamma ** epoch_float, config['maximum_focusing_rate'])
+      k_frac = min(1.0-gamma ** epoch_float, config['maximum_focusing_rate'])
 
-      config['anneal_rate'] = int(config['batch_size']-math.floor(config['batch_size'] * k_frac))
+      config['Focusing_rate'] = int(math.floor(config['batch_size'] * k_frac))
+
+      #config['anneal_rate'] = int(config['batch_size']-math.floor(config['batch_size'] * k_frac))
       if not (state_dict['itr'] % 2000):
-        print('Update anneal_rate %4.3f,  %4.3f' % (config['anneal_rate'], k_frac))
+        print('Update Focusing_rate %4.3f,  %4.3f' % (config['Focusing_rate'], k_frac))
 
       # Increment the iteration counter
       state_dict['itr'] += 1

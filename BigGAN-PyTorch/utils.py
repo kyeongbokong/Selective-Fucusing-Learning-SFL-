@@ -39,6 +39,12 @@ def prepare_parser():
     '--maximum_focusing_rate', type=float, default=1,
     help='The percentage of maximum focusing rate (default: %(default)s)')
 
+  parser.add_argument(
+    '--Training_type', type=str, default='without_SFL',
+    choices=['without_SFL', 'SFL', 'SFL+'],
+    help='Training type of SFL (default: %(default)s)')
+
+
   ### Instance Selection stuff ###
   parser.add_argument(
     '--embedding', type=str, default='inceptionv3',
