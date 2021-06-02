@@ -81,13 +81,13 @@ The main hyperparameter for Selective Focusing Learing is the `Focusing_rate`, a
 ```python
 
   def SFL(self, out_c, out_u, Focusing_rate):
-    out_c, idx_c = torch.sort(out_c, dim=0)
+    out_c, idx_c = torch.sort(out_c, dim=0, descending=True)
     out_u = out_u[idx_c[:, 0]]
     out = torch.cat([out_c[Focusing_rate:] + out_u[Focusing_rate:], out_c[:Focusing_rate]], 0)
     return out
 
   def SFL_plus(self, out_c, out_u, Focusing_rate, scores):
-    _,idx_c = torch.sort(scores, dim=0, descending=True)
+    _,idx_c = torch.sort(scores, dim=0)
     out_c = out_c[idx_c]
     out_u = out_u[idx_c]
     out = torch.cat([out_c[Focusing_rate:] + out_u[Focusing_rate:], out_c[:Focusing_rate]], 0)
