@@ -69,7 +69,7 @@ Our model achieves the following performance on :
 |      Exact SFL+    |  **21.98** |  **13.55** | **0.73**| 0.66| **0.85**| **0.81**|
 
 
-## Applying Selective Focusing Learing to Your Own Dataset or Any cGAN variant architectures
+## Applying Selective Focusing Learning to Your Own Dataset or Any cGAN variant architectures
 
 Selective Focusing Learing can be applied to any class labeled PyTorch dataset using the `SFL` and `SFL_plus` functions which are a few lines of code. 
 
